@@ -1,0 +1,15 @@
+//@version=2
+strategy("Spill'd Milk Strategy", overlay = true)
+
+fast = input(title = "fast bars back", defval = 20, step = 1)
+slow = input(title = "slow bars back", defval = 50, step = 5)
+
+ma1 = vwma(close, slow) 
+ma2 = vwma(close, fast)
+
+plot(ma1, title = "50", color = lime, style = line, linewidth = 5)
+plot(ma2, title = "20", color = purple, style = line, linewidth = 5)
+
+strategy.entry("buy", true, when = crossover(ma2, ma1))
+strategy.entry("sell", false, when = crossover(ma1, ma2))
+strategy.exit("buy", trail_points = 100)
