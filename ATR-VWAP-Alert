@@ -1,0 +1,38 @@
+// v77 - WORKS - Claybowl
+
+//These signals mostly consist of crossovers between a 13 VWMA and a 62 VWMA. I've found these two moving averages to be quite special in their ability to
+//recognize a quick trend using volume data. The VWAP is used in the alert system as well, to give some perspective on which direction we are looking to take. We
+//are also using ATR. We only take trades when the ATR is on the move, meaning we have a chance to catch a volatile move! Finally, we use RSI to help weed out bad
+//trades. We only take 'longs' with bullish readings from RSI, and we only take 'shorts' with bearish readings from RSI. These alerts are fantastic for catching quick intraday
+//trades in either direction. I recommend using a small 'take profit' target rather than using an exit indicator. These trades can move 20-30 pips and reverse just quickly. Good luck!
+
+//How To Use:
+//When the alert system is added to the chart, you will notice up/down symbols appear at various locations. For bullish alerts, right click an 'Up' symbol and choose 'Add Alert on VWap & ATR..'
+//There are two condition options. Long and short, amd below that 'Buy-Signal/Sell-Signal'. Choose 'long' and 'Buy-Signal'. At options, choose 'Once Per Bar Close'. Design your alert, and you're good to go.
+//For bearish signals, find a 'down' signal on the chart. Right click and follow the same process, except choosing 'short/Sell-Signal' conditions. 
+
+study('ATR+VWAP Alert', overlay=true)
+// data series for RSI with length 14
+rsi = rsi(close, 14)
+// data series for ATR with length 14
+vol = atr(14)
+// data series for VWAP
+VWAP = vwap(0)
+// data series for VWMAs, length 13 and 62
+ma1 = vwma(close, 13)
+ma2 = vwma(close, 62)
+
+// data series for buy signals:
+//price should be above the VWAP and RSI should be higher than 55. ATR rising atleast 1 candle 
+buysignal = close > vwap and crossover(ma1, ma2) and rising(vol, 1) and rsi > 55 and vol > 0.0006
+// data series for sell signals:
+//price should be below VWAP and RSI should be above 55. ATR rising atleast 1 candle
+sellsignal = close < vwap and crossunder(ma1, ma2) and rising(vol, 1) and rsi < 45 and vol > 0.0006
+
+// draw some shapes on the chart if conditions are met
+plotshape(buysignal, title = 'long', style=shape.triangleup, style=size.huge, text='up')
+plotshape(sellsignal, title = 'short', style =shape.triangledown, style=size.huge, text='down')
+
+// create alert conditions!
+alertcondition(buysignal, title="Buy-Signal", message="price is above VWAP with rising ATR and trend")
+alertcondition(sellsignal, title="Sell-Signal", message="price is below VWAP with rising ATR and trend")
