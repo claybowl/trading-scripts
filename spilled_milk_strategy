@@ -1,0 +1,63 @@
+//
+strategy("Spill'd Milk Strategy", overlay = false, scale=scale.left, initial_capital = 1000, default_qty_type = strategy.percent_of_equity, calc_on_order_fills = true, default_qty_value=50)
+
+fast = input(title = "fast bars back", defval = 20, step = 1)
+slow = input(title = "slow bars back", defval = 50, step = 5)
+
+ma1 = vwma(close, slow) 
+ma2 = vwma(close, fast)
+
+plot(ma1, title = "50", color = orange, style = line, linewidth = 5)
+plot(ma2, title = "20", color = fuchsia, style = line, linewidth = 5)
+
+strategy.entry("buy", true, when = crossover(ma2, ma1))
+strategy.entry("sell", false, when = crossunder(ma2, ma1))
+strategy.exit("buy", "sell", trail_points = 200)
+
+//periods = 50
+//ATRpc = 100 * atr(periods) / close
+//plot(ATRpc, color=red)
+
+title='improvedmi', shorttitle='improvedmi', overlay=false
+src = input(close)
+OverBought = input(99, minval=10)
+OverSold = input(1, maxval=70)
+smooth = input(5)
+hline(0)
+hline(30)
+hline(70)
+hline(100)
+
+Length = input(14)
+NormalizeRange = input(true)
+
+normalize(series) =>
+    h = highest(series, Length)
+    l = lowest(series, Length)
+    res = (series - l)/(h - l)
+    
+len = input(5, minval=1)
+ma3 = wma(src*volume, len) / wma(volume, len)
+
+result1 = NormalizeRange ? normalize(ma2) : (ma3 / sma(ma2, Length))
+
+smooth1 = input(5)
+m1 = sma(result1, smooth)
+m2 = sma(result1*100, smooth)
+plot(m2, title='M', color = open < close ? green : red,linewidth=3, transp=0)
+
+///DIRECTIONAL MOVEMENT INDEX///
+len3 = input(5, minval=1, title="DI Length")
+lensig3 = input(14, title="ADX Smoothing", minval=1, maxval=50)
+up3 = change(high)
+down3 = -change(low)
+plusDM3 = na(up3) ? na : (up3 > down3 and up3 > 0 ? up3 : 0)
+minusDM3 = na(down3) ? na : (down3 > up3 and down3 > 0 ? down3 : 0)
+trur3 = rma(tr, len3)
+plus3 = fixnan(100 * rma(plusDM3, len3) / trur3)
+minus3 = fixnan(100 * rma(minusDM3, len3) / trur3)
+sum3 = plus3 + minus3
+adx3 = 100 * rma(abs(plus3 - minus3) / (sum3 == 0 ? 1 : sum3), lensig3)
+plot(plus3, color=green, style=line, linewidth=2, title="+DI")
+plot(minus3, color=red, style=line, linewidth=2, title="-DI")
+plot(adx3, color=white, style=line, linewidth=3, title="ADX")
